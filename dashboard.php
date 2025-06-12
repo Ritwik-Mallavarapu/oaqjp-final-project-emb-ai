@@ -1,13 +1,8 @@
 <?php
-require_once 'php/config.php'; // Adjust path if necessary
-
-// Check if user is logged in, if not, redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: index.html"); // Adjust path if necessary
-    exit;
-}
-
-$username = $_SESSION['username'];
+require_once 'php/config.php';
+require_once 'php/session_check.php';
+// Page specific PHP code follows
+// $username = $current_username; // from session_check.php
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,7 +27,7 @@ $username = $_SESSION['username'];
         </ul>
     </nav>
     <div class="container">
-        <h2>Welcome, <?php echo htmlspecialchars($username); ?>!</h2>
+        <h2>Welcome, <?php echo htmlspecialchars($current_username); ?>!</h2>
         <p>This is your personalized dashboard. From here, you can access training modules, use the AI repair assistance tool, or provide feedback.</p>
         {/* More dashboard content will go here later */}
         <div class="row mt-4">

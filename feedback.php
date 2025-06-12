@@ -1,12 +1,8 @@
 <?php
-require_once 'php/config.php'; // Adjust path if necessary
+require_once 'php/config.php';
+require_once 'php/session_check.php';
+// $username = $current_username; // from session_check.php
 
-// Check if user is logged in, if not, redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: index.html"); // Adjust path if necessary
-    exit;
-}
-$username = $_SESSION['username'];
 $feedback_submitted_message = $_SESSION['feedback_message'] ?? null;
 unset($_SESSION['feedback_message']); // Clear the message after displaying
 ?>
@@ -33,7 +29,7 @@ unset($_SESSION['feedback_message']); // Clear the message after displaying
         </ul>
     </nav>
     <div class="container">
-        <h2>We value your input, <?php echo htmlspecialchars($username); ?>!</h2>
+        <h2>We value your input, <?php echo htmlspecialchars($current_username); ?>!</h2>
         <p>Please use the form below to report any issues, bugs, or suggestions for improvement.</p>
 
         <?php if ($feedback_submitted_message): ?>

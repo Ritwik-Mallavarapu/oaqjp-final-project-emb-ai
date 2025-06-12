@@ -1,64 +1,72 @@
 <?php
-require_once 'php/config.php'; // Adjust path if necessary
+require_once 'php/config.php';
+require_once 'php/session_check.php';
+require_once 'php/db_connect.php'; // Provides $pdo
+// $username = $current_username; // from session_check.php
+// $user_id = $current_user_id; // from session_check.php
 
-// Check if user is logged in, if not, redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header("Location: index.html"); // Adjust path if necessary
-    exit;
+$search_query = trim($_GET['search'] ?? '');
+$displayed_modules = [];
+$search_message = '';
+$user_manual_progress = [];
+
+$progress_feedback_message = $_SESSION['progress_feedback_message'] ?? null;
+$progress_feedback_type = $_SESSION['progress_feedback_type'] ?? 'info';
+unset($_SESSION['progress_feedback_message'], $_SESSION['progress_feedback_type']);
+
+try {
+    if (!empty($search_query)) {
+        $sql = "SELECT id, brand, model, title, description
+                FROM training_manuals
+                WHERE brand LIKE :query
+                   OR model LIKE :query
+                   OR title LIKE :query
+                   OR description LIKE :query_desc
+                ORDER BY brand, model, title";
+        $stmt = $pdo->prepare($sql);
+        $search_param = "%" . $search_query . "%";
+        $stmt->bindParam(':query', $search_param);
+        $stmt->bindParam(':query_desc', $search_param); // Can be same or different if more specific search on description
+    } else {
+        $sql = "SELECT id, brand, model, title, description
+                FROM training_manuals
+                ORDER BY brand, model, title";
+        $stmt = $pdo->prepare($sql);
+    }
+    $stmt->execute();
+    $displayed_modules = $stmt->fetchAll();
+
+    if (empty($displayed_modules) && !empty($search_query)) {
+        $search_message = 'No training modules found matching your search: "' . htmlspecialchars($search_query) . '".';
+    } elseif (empty($displayed_modules)) {
+        $search_message = 'No training modules available at the moment. Please check back later.';
+    } else {
+        // Fetch progress for displayed manuals
+        if (isset($current_user_id) && !empty($displayed_modules)) {
+            $manual_ids_on_page = array_column($displayed_modules, 'id');
+            if (!empty($manual_ids_on_page)) {
+                try {
+                    $sql_manual_progress = "SELECT content_id, status FROM user_progress
+                                            WHERE user_id = :user_id AND content_type = 'manual' AND content_id IN (" . implode(',', array_fill(0, count($manual_ids_on_page), '?')) . ")";
+                    $stmt_manual_progress = $pdo->prepare($sql_manual_progress);
+                    $params_progress = array_merge([$current_user_id], $manual_ids_on_page);
+                    $stmt_manual_progress->execute($params_progress);
+                    while($row = $stmt_manual_progress->fetch()){
+                        $user_manual_progress[$row['content_id']] = $row['status'];
+                    }
+                } catch (PDOException $e_progress) { // Different variable for exception
+                    error_log("Error fetching manual progress for training page: " . $e_progress->getMessage());
+                }
+            }
+        }
+    }
+
+} catch (PDOException $e) {
+    error_log("PDOException in training.php: " . $e->getMessage());
+    $search_message = "Error fetching training modules. Please try again later.";
+    // In production, you might want to display a more generic error or handle it differently.
 }
-$username = $_SESSION['username'];
 
-// Simulated training data (replace with database later)
-$all_training_modules = [
-    "Dell XPS 13" => [
-        "manual_url" => "manual_viewer.php?model=Dell_XPS_13&type=manual",
-        "video_url" => "video_viewer.php?model=Dell_XPS_13&type=video",
-        "quiz_url" => "quiz.php?model=Dell_XPS_13",
-        "description" => "Comprehensive guide for Dell XPS 13 (Model 9300, 9310) repairs, including screen and battery replacement.",
-        "tags" => "Dell, XPS 13, 9300, 9310, ultrabook"
-    ],
-    "HP Spectre x360" => [
-        "manual_url" => "manual_viewer.php?model=HP_Spectre_x360&type=manual",
-        "video_url" => "video_viewer.php?model=HP_Spectre_x360&type=video",
-        "quiz_url" => "quiz.php?model=HP_Spectre_x360",
-        "description" => "Detailed repair instructions for HP Spectre x360 (13-inch, 15-inch models) focusing on keyboard and hinge issues.",
-        "tags" => "HP, Spectre, x360, convertible, 2-in-1"
-    ],
-    "Lenovo ThinkPad T480" => [
-        "manual_url" => "manual_viewer.php?model=Lenovo_ThinkPad_T480&type=manual",
-        "video_url" => "video_viewer.php?model=Lenovo_ThinkPad_T480&type=video",
-        "quiz_url" => "quiz.php?model=Lenovo_ThinkPad_T480",
-        "description" => "Step-by-step repair videos and manuals for Lenovo ThinkPad T480, covering RAM and SSD upgrades.",
-        "tags" => "Lenovo, ThinkPad, T480, business, laptop"
-    ],
-    "Apple MacBook Pro 16" => [
-        "manual_url" => "manual_viewer.php?model=Apple_MacBook_Pro_16&type=manual",
-        "video_url" => "video_viewer.php?model=Apple_MacBook_Pro_16&type=video",
-        "quiz_url" => "quiz.php?model=Apple_MacBook_Pro_16",
-        "description" => "Repair guides for Apple MacBook Pro 16-inch, including battery and keyboard service.",
-        "tags" => "Apple, MacBook Pro, 16-inch, retina"
-    ]
-];
-
-$search_query = $_GET['search'] ?? '';
-$displayed_modules = $all_training_modules;
-
-if (!empty($search_query)) {
-    $displayed_modules = array_filter($all_training_modules, function($details, $model_name) use ($search_query) {
-        $search_query_lower = strtolower($search_query);
-        // Check against model name (key), description, and tags
-        if (stripos(strtolower($model_name), $search_query_lower) !== false) {
-            return true;
-        }
-        if (stripos(strtolower($details['description']), $search_query_lower) !== false) {
-            return true;
-        }
-        if (isset($details['tags']) && stripos(strtolower($details['tags']), $search_query_lower) !== false) {
-            return true;
-        }
-        return false;
-    }, ARRAY_FILTER_USE_BOTH);
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,38 +91,52 @@ if (!empty($search_query)) {
         </ul>
     </nav>
     <div class="container">
-        <h2>Welcome, <?php echo htmlspecialchars($username); ?>! Select or Search for a Training Module.</h2>
+        <h2>Welcome, <?php echo htmlspecialchars($current_username); ?>! Select or Search for a Training Module.</h2>
 
         <form action="training.php" method="get" class="mb-4">
             <div class="input-group">
-                <input type="text" name="search" class="form-control" placeholder="Search by brand, model, configuration (e.g., Dell, XPS 13, RAM upgrade)" value="<?php echo htmlspecialchars($search_query); ?>">
+                <input type="text" name="search" class="form-control" placeholder="Search manuals by brand, model, title..." value="<?php echo htmlspecialchars($search_query); ?>">
                 <button class="btn btn-primary" type="submit">Search</button>
             </div>
         </form>
 
-        <?php if (empty($displayed_modules) && !empty($search_query)): ?>
-            <div class="alert alert-warning" role="alert">
-                No training modules found matching your search: "<?php echo htmlspecialchars($search_query); ?>". Try a different term.
+        <?php if ($progress_feedback_message): ?>
+            <div class="alert alert-<?php echo htmlspecialchars($progress_feedback_type); ?> mt-3"><?php echo htmlspecialchars($progress_feedback_message); ?></div>
+        <?php endif; ?>
+
+        <?php if (!empty($search_message)): ?>
+            <div class="alert <?php echo (strpos($search_message, 'Error') !== false || strpos($search_message, 'No training modules found') !== false) ? 'alert-warning' : 'alert-info'; ?>" role="alert">
+                <?php echo htmlspecialchars($search_message); ?>
             </div>
-        <?php elseif (empty($displayed_modules)): ?>
-            <div class="alert alert-info" role="alert">
-                No training modules available at the moment.
-            </div>
-        <?php else: ?>
+        <?php endif; ?>
+
+        <?php if (!empty($displayed_modules)): ?>
             <div class="row">
-                <?php foreach ($displayed_modules as $model => $details): ?>
+                <?php foreach ($displayed_modules as $module): ?>
                 <div class="col-md-4 mb-3">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title"><?php echo htmlspecialchars($model); ?></h5>
-                            <p class="card-text"><?php echo htmlspecialchars($details['description']); ?></p>
-                            <a href="<?php echo htmlspecialchars($details['manual_url']); ?>" class="btn btn-info btn-sm mb-1">View Manual</a>
-                            <a href="<?php echo htmlspecialchars($details['video_url']); ?>" class="btn btn-info btn-sm mb-1">View Video Tutorial</a>
-                            <a href="<?php echo htmlspecialchars($details['quiz_url']); ?>" class="btn btn-warning btn-sm mb-1">Take Quiz</a>
+                            <h5 class="card-title">
+                                <?php echo htmlspecialchars($module['brand'] . ' ' . $module['model']); ?>
+                                <?php if (($user_manual_progress[$module['id']] ?? null) == 'completed'): ?>
+                                    <span class="badge bg-success float-end">Completed</span>
+                                <?php endif; ?>
+                            </h5>
+                            <h6 class="card-subtitle mb-2 text-muted"><?php echo htmlspecialchars($module['title']); ?></h6>
+                            <p class="card-text"><?php echo nl2br(htmlspecialchars(substr($module['description'], 0, 100) . (strlen($module['description']) > 100 ? '...' : ''))); ?></p>
+                            <a href="manual_viewer.php?id=<?php echo $module['id']; ?>" class="btn btn-info btn-sm mb-1">View Manual</a>
+
+                            <!-- Links for videos and quizzes will be dynamic based on related content -->
+                            <a href="video_viewer.php?manual_id=<?php echo $module['id']; ?>" class="btn btn-info btn-sm mb-1">View Videos</a>
+                            <a href="quiz.php?manual_id=<?php echo $module['id']; ?>" class="btn btn-warning btn-sm mb-1">Take Quiz</a>
                         </div>
                     </div>
                 </div>
                 <?php endforeach; ?>
+            </div>
+        <?php elseif (empty($search_message)): // Only show if no other message is already set ?>
+            <div class="alert alert-info" role="alert">
+                 No training modules found.
             </div>
         <?php endif; ?>
     </div>
