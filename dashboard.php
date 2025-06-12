@@ -27,6 +27,16 @@ require_once 'php/session_check.php';
         </ul>
     </nav>
     <div class="container">
+        <?php
+        if (isset($_GET['status']) && $_GET['status'] === 'access_denied') { // General access denied
+            echo '<div class="alert alert-danger">Access Denied: You do not have permission to view that page.</div>';
+        }
+        if (isset($_GET['status']) && $_GET['status'] === 'admin_access_denied') { // Specific message for admin area
+            $access_denied_msg = $_SESSION['access_denied_message'] ?? 'You do not have permission to access the admin area.';
+            echo '<div class="alert alert-danger">' . htmlspecialchars($access_denied_msg) . '</div>';
+            unset($_SESSION['access_denied_message']); // Clear message after displaying
+        }
+        ?>
         <h2>Welcome, <?php echo htmlspecialchars($current_username); ?>!</h2>
         <p>This is your personalized dashboard. From here, you can access training modules, use the AI repair assistance tool, or provide feedback.</p>
         {/* More dashboard content will go here later */}

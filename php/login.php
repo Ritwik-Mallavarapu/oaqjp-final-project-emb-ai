@@ -1,13 +1,18 @@
 <?php
+// php/login.php
 require_once 'config.php'; // For session_start()
 require_once 'db_connect.php'; // For $pdo database connection
 
-$message = '';
+$message = ''; // For potential error messages passed to index.html via GET
 $login_success = false;
 
+// If already logged in, redirect based on role
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    // If already logged in, redirect to dashboard
-    header("Location: ../dashboard.php");
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'owner') {
+        header("Location: ../admin_dashboard.php"); // Path to owner dashboard
+    } else {
+        header("Location: ../dashboard.php"); // Path to user dashboard
+    }
     exit;
 }
 
@@ -19,7 +24,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $message = "Username and password are required.";
     } else {
         try {
-            $stmt = $pdo->prepare("SELECT id, username, email, password_hash FROM users WHERE username = :username LIMIT 1");
+            // Fetch role along with other details
+            $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role FROM users WHERE username = :username LIMIT 1");
             $stmt->bindParam(':username', $username);
             $stmt->execute();
             $user = $stmt->fetch();
@@ -27,17 +33,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($user && password_verify($password, $user['password_hash'])) {
                 // Password is correct, start a new session
                 $_SESSION['loggedin'] = true;
-                $_SESSION['user_id'] = $user['id']; // Store user ID
+                $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['email'] = $user['email'];
-                $_SESSION['last_activity'] = time(); // Timestamp of last activity
-                $_SESSION['session_created_time'] = time(); // Timestamp for periodic regeneration
+                $_SESSION['role'] = $user['role']; // Store user role in session
+                $_SESSION['last_activity'] = time();
+                $_SESSION['session_created_time'] = time();
+
+                session_regenerate_id(true);
 
                 $login_success = true;
-                // Regenerate session ID for security
-                session_regenerate_id(true); // Initial regeneration for security
 
-                header("Location: ../dashboard.php"); // Redirect to dashboard
+                // Redirect based on role
+                if ($user['role'] === 'owner') {
+                    header("Location: ../admin_dashboard.php");
+                } else {
+                    header("Location: ../dashboard.php");
+                }
                 exit;
             } else {
                 $message = "Invalid username or password.";
@@ -47,19 +59,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             error_log("PDOException in login.php: " . $e->getMessage());
         }
     }
-}
 
-// If login fails or not a POST request, display the login page (index.html) or this status page.
-// For this task, we'll show a status page if there's a message (i.e., login attempt failed).
-// If it's a GET request without a prior failed attempt, the user should be on index.html.
-// If $message is set, it means a POST attempt failed.
-if (!empty($message) && !$login_success) {
-    // Instead of showing a separate HTML page:
-    header("Location: ../index.html?status=login_failed&error=" . urlencode($message)); // Pass generic status
+    // If login failed, redirect back to index.html with an error status and message
+    if (!$login_success && !empty($message)) {
+        header("Location: ../index.html?status=login_failed&error=" . urlencode($message));
+        exit;
+    }
+
+} elseif (isset($_GET['status']) && $_GET['status'] === 'login_required') {
+    // This case is if another page explicitly redirects here needing login.
+    // We can let it fall through or show index.html, but index.html handles most status messages.
+    // For now, let index.html's JS handle messages.
+    // If no specific message for login_required is on index.html, it will just show the form.
+    header("Location: ../index.html?status=login_required");
     exit;
-} elseif (!$login_success && $_SERVER["REQUEST_METHOD"] !== "POST") {
-    // If it's a GET request to login.php directly without being logged in, redirect to index.html
-    header("Location: ../index.html");
-    exit;
+} else {
+    // If it's a GET request to login.php directly without being logged in or specific status,
+    // redirect to index.html.
+    // This also handles cases where form submission is not POST.
+    if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+        header("Location: ../index.html");
+        exit;
+    }
 }
 ?>
