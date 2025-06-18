@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>{{ legend }} for <a href="{{ url_for('owner_routes.edit_manual', manual_id=manual.id) }}">{{ manual.brand }} {{ manual.model_name }}</a></h3>
+    <hr>
+    <form method="POST" action="{{ url_for('owner_routes.manage_quiz', manual_id=manual.id) }}">
+        {{ form.hidden_tag() }} {# CSRF token #}
+
+        {% for i in [1, 2, 3] %}
+        <fieldset class="form-group border p-3 mb-3">
+            <legend class="w-auto px-2">Question {{i}}</legend>
+            <div class="form-group">
+                {{ form['question' ~ i].label(class="form-control-label") }}
+                {{ form['question' ~ i](class="form-control", rows=3) }}
+                {% if form['question' ~ i].errors %}
+                    <div class="invalid-feedback d-block">{% for error in form['question' ~ i].errors %}<span>{{ error }}</span>{% endfor %}</div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    {{ form['q' ~ i ~ '_option_a'].label(class="form-control-label") }}
+                    {{ form['q' ~ i ~ '_option_a'](class="form-control") }}
+                    {% if form['q' ~ i ~ '_option_a'].errors %}<div class="invalid-feedback d-block">{% for error in form['q' ~ i ~ '_option_a'].errors %}<span>{{ error }}</span>{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-4 form-group">
+                    {{ form['q' ~ i ~ '_option_b'].label(class="form-control-label") }}
+                    {{ form['q' ~ i ~ '_option_b'](class="form-control") }}
+                    {% if form['q' ~ i ~ '_option_b'].errors %}<div class="invalid-feedback d-block">{% for error in form['q' ~ i ~ '_option_b'].errors %}<span>{{ error }}</span>{% endfor %}</div>{% endif %}
+                </div>
+                <div class="col-md-4 form-group">
+                    {{ form['q' ~ i ~ '_option_c'].label(class="form-control-label") }}
+                    {{ form['q' ~ i ~ '_option_c'](class="form-control") }}
+                    {% if form['q' ~ i ~ '_option_c'].errors %}<div class="invalid-feedback d-block">{% for error in form['q' ~ i ~ '_option_c'].errors %}<span>{{ error }}</span>{% endfor %}</div>{% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                {{ form['q' ~ i ~ '_correct_option'].label(class="form-control-label") }}<br>
+                {% for subfield in form['q' ~ i ~ '_correct_option'] %}
+                    <div class="form-check form-check-inline">
+                        {{ subfield(class="form-check-input") }}
+                        {{ subfield.label(class="form-check-label") }}
+                    </div>
+                {% endfor %}
+                {% if form['q' ~ i ~ '_correct_option'].errors %}<div class="invalid-feedback d-block">{% for error in form['q' ~ i ~ '_correct_option'].errors %}<span>{{ error }}</span>{% endfor %}</div>{% endif %}
+            </div>
+        </fieldset>
+        {% endfor %}
+
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('owner_routes.list_manuals') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}

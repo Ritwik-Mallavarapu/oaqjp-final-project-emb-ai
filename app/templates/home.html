@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Welcome to Dad and Dude Co. Laptop Repair Training</h1>
+    <p>Your one-stop solution for learning and assistance.</p>
+    {% if not current_user.is_authenticated %}
+    <p>Please <a href="{{ url_for('auth_routes.login') }}">login</a> or <a href="{{ url_for('auth_routes.register') }}">register</a> to access the training materials.</p>
+    {% else %}
+    <p>Hello, {{ current_user.username }}!</p>
+    <!-- Add links to dashboard or other features here -->
+    {% endif %}
+{% endblock content %}

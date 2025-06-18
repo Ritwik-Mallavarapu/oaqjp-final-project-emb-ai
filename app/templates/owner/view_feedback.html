@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Employee Feedback</h2>
+    <hr>
+    {% if feedbacks %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Date Submitted</th>
+                <th>Feedback</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in feedbacks %}
+            <tr>
+                <td>{{ item.author.username }}</td>
+                <td>{{ item.author.email }}</td>
+                <td>{{ item.submitted_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ item.feedback_text }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">No feedback has been submitted yet.</div>
+    {% endif %}
+    <a href="{{ url_for('owner_routes.dashboard') }}" class="btn btn-secondary mt-3">Back to Owner Dashboard</a>
+</div>
+{% endblock content %}

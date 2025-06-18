@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Employee Dashboard - Welcome, {{ current_user.username }}!</h2>
+    <hr>
+
+    <h4>Service Manuals & Quizzes</h4>
+    {% if manuals %}
+        <div class="list-group mb-4">
+            {% for manual in manuals %}
+                <a href="{{ url_for('general_routes.view_manual', manual_id=manual.id) }}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ manual.brand }} - {{ manual.model_name }}</h5>
+                        <small>Uploaded: {{ manual.upload_timestamp.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <small>Uploaded by: {{ manual.uploader.username }}</small>
+
+                    {% if manual.quizzes and manual.quizzes[0] %}
+                        {% set quiz_id = manual.quizzes[0].id %}
+                        {% set attempt = user_attempts.get(quiz_id) %}
+                        {% if attempt %}
+                            <span class="badge badge-{% if attempt.pass_status %}success{% else %}danger{% endif %} float-right mt-1">
+                                Attempted: Score {{ attempt.score }}/3 {% if attempt.pass_status %}(Passed){% else %}(Failed){% endif %}
+                            </span>
+                        {% else %}
+                            <span class="badge badge-info float-right mt-1">Quiz Available</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge badge-secondary float-right mt-1">No Quiz</span>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No service manuals are currently available.</p>
+    {% endif %}
+
+    <hr>
+    <h4>My Overall Progress</h4>
+    {% set total_attempted = current_user.quiz_attempts | length %}
+    {% set total_passed = current_user.quiz_attempts | selectattr('pass_status', 'equalto', true) | length %}
+    <p>Total Quizzes Attempted: {{ total_attempted }}</p>
+    <p>Quizzes Passed: {{ total_passed }}</p>
+    <p><em>More detailed progress tracking coming soon!</em></p>
+
+    <hr>
+    <h4>Submit Feedback</h4>
+    <form method="POST" action="{{ url_for('general_routes.dashboard') }}">
+        {{ feedback_form.hidden_tag() }} {# CSRF token #}
+        <div class="form-group">
+            {{ feedback_form.feedback_text.label(class="form-control-label") }}
+            {% if feedback_form.feedback_text.errors %}
+                {{ feedback_form.feedback_text(class="form-control form-control-lg is-invalid", rows=5) }}
+                <div class="invalid-feedback">
+                    {% for error in feedback_form.feedback_text.errors %}
+                        <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ feedback_form.feedback_text(class="form-control form-control-lg", rows=5) }}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ feedback_form.submit(class="btn btn-primary", name="feedback_submit") }} {# Added name to distinguish submit buttons if needed #}
+        </div>
+    </form>
+</div>
+{% endblock content %}

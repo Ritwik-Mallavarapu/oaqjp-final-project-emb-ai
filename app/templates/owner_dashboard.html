@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Owner Dashboard</h2>
+    <p>Welcome, {{ current_user.username }}! You have owner privileges.</p>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Service Manuals</h5>
+                    <p class="card-text">Currently managing: <strong>{{ manuals_count }}</strong> manual(s).</p>
+                    {# These url_for links will point to routes defined in owner_routes.py later #}
+                    <a href="{{ url_for('owner_routes.dashboard') }}#manuals" class="btn btn-primary">Manage Manuals</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quizzes</h5>
+                    <p class="card-text">Manage quizzes for each service manual.</p>
+                    <a href="{{ url_for('owner_routes.dashboard') }}#quizzes" class="btn btn-primary">Manage Quizzes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Employee Feedback</h5>
+                    <p class="card-text">View <strong>{{ feedback_count }}</strong> submitted feedback item(s).</p>
+                    <a href="{{ url_for('owner_routes.dashboard') }}#feedback" class="btn btn-primary">View Feedback</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <p><em>Detailed management sections (Manuals, Quizzes, Feedback) will be implemented below or on separate pages.</em></p>
+
+    <div id="manuals" class="mt-4">
+        <h4>Manual Management Section (Placeholder)</h4>
+        <p>Links to add, edit, delete manuals will appear here.</p>
+    </div>
+    <div id="quizzes" class="mt-4">
+        <h4>Quiz Management Section (Placeholder)</h4>
+        <p>Interface to add/edit quizzes for manuals will appear here.</p>
+    </div>
+    <div id="feedback" class="mt-4">
+        <h4>Feedback Viewing Section (Placeholder)</h4>
+        <p>Table of employee feedback will appear here.</p>
+    </div>
+
+</div>
+{% endblock content %}

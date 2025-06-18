@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Manage Service Manuals</h2>
+        <a href="{{ url_for('owner_routes.add_manual') }}" class="btn btn-success">Add New Manual</a>
+    </div>
+
+    {% if manuals %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Brand</th>
+                <th>Model Name</th>
+                <th>Uploaded On</th>
+                <th>Uploaded By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for manual in manuals %}
+            <tr>
+                <td>{{ manual.brand }}</td>
+                <td>{{ manual.model_name }}</td>
+                <td>{{ manual.upload_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ manual.uploader.username }}</td>
+                <td>
+                    <a href="{{ url_for('owner_routes.edit_manual', manual_id=manual.id) }}" class="btn btn-sm btn-outline-primary mr-1">Edit Manual</a>
+                    {# Link to Quiz Management for this manual (to be implemented) #}
+                    <a href="{{ url_for('owner_routes.manage_quiz', manual_id=manual.id) }}" class="btn btn-sm btn-outline-info mr-1">Manage Quiz</a>
+                    <form action="{{ url_for('owner_routes.delete_manual', manual_id=manual.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this manual and its associated quizzes?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-info">No service manuals found. <a href="{{ url_for('owner_routes.add_manual') }}">Add one now!</a></div>
+    {% endif %}
+    <a href="{{ url_for('owner_routes.dashboard') }}" class="btn btn-secondary mt-3">Back to Owner Dashboard</a>
+</div>
+{% endblock content %}

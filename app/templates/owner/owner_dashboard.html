@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Owner Dashboard</h2>
+    <p>Welcome, {{ current_user.username }}! You have owner privileges.</p>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Service Manuals</h5>
+                    <p class="card-text">Currently managing: <strong>{{ manuals_count }}</strong> manual(s).</p>
+                    <a href="{{ url_for('owner_routes.list_manuals') }}" class="btn btn-primary">Manage Manuals</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quizzes</h5>
+                    <p class="card-text">Manage quizzes for each service manual.</p>
+                    {# This link will be more specific once quiz management is part of manual management workflow #}
+                    <a href="{{ url_for('owner_routes.list_manuals') }}" class="btn btn-primary">Manage Quizzes</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Employee Feedback</h5>
+                    <p class="card-text">View <strong>{{ feedback_count }}</strong> submitted feedback item(s).</p>
+                    <a href="{{ url_for('owner_routes.view_all_feedback') }}" class="btn btn-primary">View Feedback</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <p><em>Use the links above to manage different aspects of the platform.</em></p>
+</div>
+{% endblock content %}

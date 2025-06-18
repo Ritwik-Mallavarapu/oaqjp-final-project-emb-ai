@@ -1,0 +1,6 @@
+Flask
+Flask-SQLAlchemy
+Flask-Login
+Werkzeug
+Flask-WTF
+psycopg2-binary

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ manual.brand }} {{ manual.model_name }}</h2>
+    <p><small>Uploaded by: {{ manual.uploader.username }} on {{ manual.upload_timestamp.strftime('%Y-%m-%d %H:%M') }}</small></p>
+    <hr>
+
+    <h4>Manual Content:</h4>
+    <div class="card mb-4">
+        <div class="card-body" style="white-space: pre-wrap;">
+            {{ manual.content }}
+        </div>
+    </div>
+
+    <hr>
+    <h4>Quiz for this Manual</h4>
+    {% if quiz %}
+        {% if existing_attempt %}
+            <div class="alert alert-info">
+                You have already attempted this quiz. Score: {{ existing_attempt.score }}/3.
+                {% if existing_attempt.pass_status %} (Passed) {% else %} (Failed) {% endif %}
+                <br><small>Attempted on: {{ existing_attempt.completed_timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                <p>You can re-attempt the quiz below. Your previous score will be updated.</p>
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('general_routes.submit_quiz', quiz_id=quiz.id) }}">
+            {{ form.csrf_token }}
+
+            <div class="card mb-3">
+                <div class="card-header">Question 1: {{ quiz.question1 }}</div>
+                <div class="card-body">
+                    {% for opt_val, opt_text in [('a', quiz.q1_option_a), ('b', quiz.q1_option_b), ('c', quiz.q1_option_c)] %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q{{quiz.id}}_question1" id="q{{quiz.id}}_q1_opt_{{opt_val}}" value="{{opt_val}}" required {% if existing_attempt and existing_attempt.answers and existing_attempt.answers.get('q1') == opt_val %}checked{% endif %}>
+                        <label class="form-check-label" for="q{{quiz.id}}_q1_opt_{{opt_val}}">{{ opt_text }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Question 2: {{ quiz.question2 }}</div>
+                <div class="card-body">
+                     {% for opt_val, opt_text in [('a', quiz.q2_option_a), ('b', quiz.q2_option_b), ('c', quiz.q2_option_c)] %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q{{quiz.id}}_question2" id="q{{quiz.id}}_q2_opt_{{opt_val}}" value="{{opt_val}}" required {% if existing_attempt and existing_attempt.answers and existing_attempt.answers.get('q2') == opt_val %}checked{% endif %}>
+                        <label class="form-check-label" for="q{{quiz.id}}_q2_opt_{{opt_val}}">{{ opt_text }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Question 3: {{ quiz.question3 }}</div>
+                <div class="card-body">
+                     {% for opt_val, opt_text in [('a', quiz.q3_option_a), ('b', quiz.q3_option_b), ('c', quiz.q3_option_c)] %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q{{quiz.id}}_question3" id="q{{quiz.id}}_q3_opt_{{opt_val}}" value="{{opt_val}}" required {% if existing_attempt and existing_attempt.answers and existing_attempt.answers.get('q3') == opt_val %}checked{% endif %}>
+                        <label class="form-check-label" for="q{{quiz.id}}_q3_opt_{{opt_val}}">{{ opt_text }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    {% else %}
+        <p>No quiz is currently available for this manual.</p>
+    {% endif %}
+
+    <a href="{{ url_for('general_routes.dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock content %}
