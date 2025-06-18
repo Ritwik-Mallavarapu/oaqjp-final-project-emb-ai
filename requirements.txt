@@ -4,3 +4,9 @@ Flask-Login
 Werkzeug
 Flask-WTF
 psycopg2-binary
+Flask-Mail
+pytest
+sentence-transformers
+faiss-cpu
+PyMuPDF
+llama-cpp-python

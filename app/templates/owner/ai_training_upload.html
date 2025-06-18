@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Upload PDF for AI Training</h2>
+    <p>Upload PDF documents that the AI model will use as its knowledge base.</p>
+    <hr>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('owner_routes.ai_training_upload') }}">
+        {{ form.hidden_tag() }} {# CSRF token #}
+        <fieldset class="form-group">
+            <div class="form-group">
+                {{ form.pdf_file.label(class="form-control-label") }}<br>
+                {{ form.pdf_file(class="form-control-file") }}
+                {% if form.pdf_file.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.pdf_file.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+    <hr>
+    <a href="{{ url_for('owner_routes.dashboard') }}" class="btn btn-secondary">Back to Owner Dashboard</a>
+</div>
+{% endblock content %}

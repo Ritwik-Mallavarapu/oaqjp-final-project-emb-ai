@@ -1,0 +1,100 @@
+/* Dad and Dude Co. - Custom Styles */
+
+/* Define a color palette (example) */
+:root {
+    --primary-color: #004A99; /* A Dell-like blue */
+    --secondary-color: #007DBA; /* Another shade of blue */
+    --accent-color: #F2F2F2;   /* Light grey for backgrounds/accents */
+    --navbar-text-color: #FFFFFF;
+    --button-text-color: #FFFFFF;
+    --card-header-bg: #E9ECEF; /* Light grey for card headers */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--accent-color);
+    color: #333;
+}
+
+.navbar {
+    background-color: var(--primary-color) !important; /* Override Bootstrap */
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: var(--navbar-text-color) !important;
+}
+
+.navbar .nav-link:hover {
+    color: #D0D0D0 !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--button-text-color);
+}
+
+.btn-primary:hover {
+    background-color: #003366; /* Darker shade of primary */
+    border-color: #003366;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--button-text-color);
+}
+
+.btn-secondary:hover {
+    background-color: #005F8C; /* Darker shade of secondary */
+    border-color: #005F8C;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-color);
+}
+
+.card-header {
+    background-color: var(--card-header-bg);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.table th { /* Table headers */
+    background-color: var(--secondary-color);
+    color: var(--navbar-text-color);
+}
+
+/* Chatbot display enhancements */
+#chat-display { /* The main container for chat messages */
+    background-color: #fff;
+    border-radius: 4px;
+    /* Removed white-space: pre-wrap from here; apply to individual messages if needed */
+    word-wrap: break-word;
+}
+
+#chat-display div { /* Individual messages within the chat display */
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+    white-space: pre-wrap; /* Crucial for showing newlines from LLM */
+    word-wrap: break-word; /* Ensures long words in messages also wrap */
+}
+
+#chat-display div:last-child {
+    border-bottom: none;
+}
+
+/* Ensure content area has some padding from navbar */
+.container.mt-4 {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+/* Responsive adjustments if needed - Bootstrap usually handles most */
+@media (max-width: 768px) {
+    /* Example: Adjust padding for smaller screens if necessary */
+    .container.mt-4 {
+        padding-top: 10px;
+    }
+}

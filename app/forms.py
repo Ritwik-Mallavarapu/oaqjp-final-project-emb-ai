@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField # Added RadioField
+from flask_wtf.file import FileField, FileAllowed # Ensure these are imported
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from app.models.models import User
+from app.models.models import User # Assuming User model is used for validation in other forms
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username',
@@ -43,29 +44,30 @@ class AddManualForm(FlaskForm):
     content = TextAreaField('Service Manual Content (Text or Markdown)', validators=[DataRequired()])
     submit = SubmitField('Save Manual')
 
-class EditManualForm(AddManualForm): # Inherits fields and validators
-    pass # No changes needed if fields are the same for editing
+class EditManualForm(AddManualForm):
+    pass
 
 class QuizManagementForm(FlaskForm):
-    # Question 1
     question1 = TextAreaField('Question 1', validators=[DataRequired(), Length(max=500)])
     q1_option_a = StringField('Option A', validators=[DataRequired(), Length(max=200)])
     q1_option_b = StringField('Option B', validators=[DataRequired(), Length(max=200)])
     q1_option_c = StringField('Option C', validators=[DataRequired(), Length(max=200)])
     q1_correct_option = RadioField('Correct Answer for Q1', choices=[('a','A'), ('b','B'), ('c','C')], validators=[DataRequired()])
-
-    # Question 2
     question2 = TextAreaField('Question 2', validators=[DataRequired(), Length(max=500)])
     q2_option_a = StringField('Option A', validators=[DataRequired(), Length(max=200)])
     q2_option_b = StringField('Option B', validators=[DataRequired(), Length(max=200)])
     q2_option_c = StringField('Option C', validators=[DataRequired(), Length(max=200)])
     q2_correct_option = RadioField('Correct Answer for Q2', choices=[('a','A'), ('b','B'), ('c','C')], validators=[DataRequired()])
-
-    # Question 3
     question3 = TextAreaField('Question 3', validators=[DataRequired(), Length(max=500)])
     q3_option_a = StringField('Option A', validators=[DataRequired(), Length(max=200)])
     q3_option_b = StringField('Option B', validators=[DataRequired(), Length(max=200)])
     q3_option_c = StringField('Option C', validators=[DataRequired(), Length(max=200)])
     q3_correct_option = RadioField('Correct Answer for Q3', choices=[('a','A'), ('b','B'), ('c','C')], validators=[DataRequired()])
-
     submit = SubmitField('Save Quiz')
+
+class AITrainingMaterialForm(FlaskForm):
+    pdf_file = FileField('PDF Training Material', validators=[
+        DataRequired(),
+        FileAllowed(['pdf'], 'PDFs only!')
+    ])
+    submit = SubmitField('Upload PDF')
